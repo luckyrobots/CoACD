@@ -7,3 +7,7 @@ coacd.egg-info/*
 *wrl
 *ply
 *DS_Store
+
+bin/
+bin-int/
+*.vcxproj*
