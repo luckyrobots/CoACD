@@ -1,5 +1,6 @@
 #pragma once
 #include <exception>
+#include <iostream>
 #ifndef DISABLE_SPDLOG
 #include <spdlog/spdlog.h>
 #endif
