@@ -36,7 +36,7 @@ else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     elseif(UNIX)
         # Linux/Unix: add -fPIC and disable -Werror=stringop-overflow
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-error=stringop-overflow")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     endif()
 endif()
 
@@ -55,6 +55,8 @@ if(WITH_3RD_PARTY_LIBS)
     include(boost)
     include(openvdb)
     include(spdlog)
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCOACD_NO_PREPROCESS")
 endif()
 
 # Set default install postfix
@@ -114,36 +116,3 @@ endif()
 # ##############################################################################
 # Install target
 # ##############################################################################
-
-install(
-  TARGETS _coacd
-  EXPORT CoACDTargets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  INCLUDES
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-install(
-  EXPORT CoACDTargets
-  FILE CoACDTargets.cmake
-  NAMESPACE CoACD::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CoACD)
-
-install(
-  FILES public/coacd.h
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CoACD)
-
-# ##############################################################################
-# Install Cmake Configuration
-# ##############################################################################
-
-include(CMakePackageConfigHelpers)
-
-configure_package_config_file(
-  ${CMAKE_SOURCE_DIR}/cmake/Config.cmake.in
-  "${CMAKE_BINARY_DIR}/CoACDConfig.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CoACD)
-
-install(FILES "${CMAKE_BINARY_DIR}/CoACDConfig.cmake"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CoACD)
