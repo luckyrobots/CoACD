@@ -1,6 +1,8 @@
 #include "coacd.h"
 #include "../src/logger.h"
+#ifndef COACD_NO_PREPROCESS
 #include "../src/preprocess.h"
+#endif
 #include "../src/process.h"
 
 namespace coacd {
@@ -76,6 +78,7 @@ std::vector<Mesh> CoACD(Mesh const &input, double threshold,
   array<array<double, 3>, 3> rot{
       {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}};
 
+#ifndef COACD_NO_PREPROCESS
   if (params.preprocess_mode == std::string("auto")) {
     bool is_manifold = IsManifold(m);
     logger::info("Mesh Manifoldness: {}", is_manifold);
@@ -84,6 +87,7 @@ std::vector<Mesh> CoACD(Mesh const &input, double threshold,
   } else if (params.preprocess_mode == std::string("on")) {
     ManifoldPreprocess(params, m);
   }
+#endif
 
   if (pca) {
     rot = m.PCA();
