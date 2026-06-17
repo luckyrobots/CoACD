@@ -19,6 +19,9 @@ if(WITH_3RD_PARTY_LIBS)
 else()
     add_definitions(-DDISABLE_SPDLOG)
     add_compile_definitions(WITH_3RD_PARTY_LIBS=0)
+    # No OpenVDB without the 3rd-party libs, so compile out the manifold
+    # preprocessing path in public/coacd.cpp (the premake build defines this too).
+    add_compile_definitions(COACD_NO_PREPROCESS)
 endif()
 
 # --- Compiler-specific flags
@@ -114,36 +117,40 @@ endif()
 # ##############################################################################
 # Install target
 # ##############################################################################
+# Only when CoACD is the top-level project. When embedded via add_subdirectory
+# (the engine build), CMAKE_SOURCE_DIR points at the parent, so Config.cmake.in
+# below wouldn't resolve, and we don't install/export an embedded static lib.
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  install(
+    TARGETS _coacd
+    EXPORT CoACDTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(
-  TARGETS _coacd
-  EXPORT CoACDTargets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  INCLUDES
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+  install(
+    EXPORT CoACDTargets
+    FILE CoACDTargets.cmake
+    NAMESPACE CoACD::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CoACD)
 
-install(
-  EXPORT CoACDTargets
-  FILE CoACDTargets.cmake
-  NAMESPACE CoACD::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CoACD)
+  install(
+    FILES public/coacd.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CoACD)
 
-install(
-  FILES public/coacd.h
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CoACD)
+  # ############################################################################
+  # Install Cmake Configuration
+  # ############################################################################
 
-# ##############################################################################
-# Install Cmake Configuration
-# ##############################################################################
+  include(CMakePackageConfigHelpers)
 
-include(CMakePackageConfigHelpers)
+  configure_package_config_file(
+    ${CMAKE_SOURCE_DIR}/cmake/Config.cmake.in
+    "${CMAKE_BINARY_DIR}/CoACDConfig.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CoACD)
 
-configure_package_config_file(
-  ${CMAKE_SOURCE_DIR}/cmake/Config.cmake.in
-  "${CMAKE_BINARY_DIR}/CoACDConfig.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CoACD)
-
-install(FILES "${CMAKE_BINARY_DIR}/CoACDConfig.cmake"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CoACD)
+  install(FILES "${CMAKE_BINARY_DIR}/CoACDConfig.cmake"
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CoACD)
+endif()
