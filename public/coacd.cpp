@@ -121,7 +121,11 @@ void set_log_level(std::string_view level) {
     throw std::runtime_error("invalid log level " + std::string(level));
   }
 #else
-  (void)level;
+  if (level != "off" && level != "debug" && level != "info" &&
+      level != "warn" && level != "warning" && level != "error" &&
+      level != "err" && level != "critical") {
+    throw std::runtime_error("invalid log level " + std::string(level));
+  }
 #endif
 }
 
